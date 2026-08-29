@@ -1,0 +1,100 @@
+# Scanner de Privacidade — App Android
+
+App Android nativa que analisa as permissões das apps instaladas, atribui um
+**score de privacidade** e recomenda ações concretas ao utilizador. Baseada no
+relatório técnico `relatoriotecnicoappprivacidade.md`.
+
+> **Princípio central:** *privacy by design*. Todo o processamento é **local**.
+> Nenhum dado do utilizador sai do dispositivo.
+
+---
+
+## O que está implementado (MVP — versão gratuita)
+
+- ✅ **Scan** das apps instaladas e respetivas permissões via `PackageManager`.
+- ✅ **Score de privacidade** global (0–100) e por app.
+- ✅ **Categorização** das permissões por sensibilidade (localização, microfone,
+  câmara, contactos, SMS, etc.).
+- ✅ **Explicação em linguagem simples** de cada permissão sensível — o valor
+  técnico credível que distingue a app.
+- ✅ **Ordenação das apps por risco** (a mais arriscada primeiro).
+- ✅ **Atalho direto** para as definições de permissão de cada app.
+- ✅ **Histórico** do score global (base de dados local Room).
+- ✅ Testes unitários do motor de scoring.
+
+## Arquitetura
+
+Segue a stack recomendada no relatório (secção 4):
+
+| Camada | Tecnologia |
+|---|---|
+| Linguagem | Kotlin |
+| UI | Jetpack Compose + Material 3 |
+| Arquitetura | MVVM |
+| Acesso a apps/permissões | `PackageManager` |
+| Base de dados local | Room (SQLite) |
+| Assíncrono | Coroutines + Flow |
+| Navegação | Navigation Compose |
+
+```
+app/src/main/java/com/jp/privacyscanner/
+├── data/
+│   ├── model/          AppInfo, PermissionInfo, PermissionCategory, RiskLevel
+│   ├── permissions/    PermissionCatalog  (categorias + explicações — o catálogo)
+│   ├── scanner/        AppScanner         (leitura via PackageManager)
+│   ├── scoring/        ScoringEngine      (o "cérebro": lógica de pontuação)
+│   └── local/          Room: ScoreHistory, DAO, AppDatabase
+├── domain/             PrivacyRepository  (orquestra scan + score + histórico)
+├── ui/
+│   ├── theme/          Cores, tema Material 3
+│   ├── components/     ScoreGauge, RiskChip
+│   ├── home/           HomeScreen + HomeViewModel
+│   └── detail/         AppDetailScreen
+├── util/               SettingsNavigator  (atalho para as definições)
+├── MainActivity.kt     Navegação Compose
+└── PrivacyScannerApp.kt
+```
+
+## Como compilar
+
+Requer **Android Studio** (Ladybug ou mais recente) e um dispositivo/emulador
+com **Android 8.0+ (API 26)**.
+
+```bash
+# Testes unitários do motor de scoring
+./gradlew test
+
+# Instalar num dispositivo ligado
+./gradlew installDebug
+```
+
+> **Nota:** ao compilar pela primeira vez o Gradle descarrega o Android Gradle
+> Plugin e as dependências AndroidX (precisa de rede). Em Android Studio, basta
+> abrir a pasta do projeto e deixar o Gradle sincronizar.
+
+## Limitações conhecidas (por design do Android — relatório, secção 2)
+
+- Só conseguimos ler as permissões **declaradas** e se estão **concedidas**.
+- **Não** conseguimos ver o uso em tempo real do microfone/câmara.
+- **Não** conseguimos revogar permissões de outra app — só **encaminhar** o
+  utilizador para as Definições.
+- `QUERY_ALL_PACKAGES` exige **justificação** na submissão à Play Store
+  (caso de uso: segurança). Ver `AndroidManifest.xml`.
+
+## O que falta / próximos passos
+
+Ver a secção **"O que acrescentar"** na resposta técnica e o roadmap por fases
+no relatório (secção 5). Em resumo:
+
+1. **Fase 0 — validação técnica** num dispositivo real com o Android mais recente.
+2. **Premium:** monitorização contínua (`WorkManager`), relatório PDF, perfis de
+   recomendação, remoção de anúncios, via Google Play Billing.
+3. **Polimento:** ícones de app reais, onboarding, tradução EN, testes em vários
+   dispositivos.
+4. **Publicação:** política de privacidade (URL), declaração *Data safety*,
+   formulário de justificação de `QUERY_ALL_PACKAGES`.
+
+---
+
+*Valores e políticas da Play Store mudam com frequência — confirma sempre na
+documentação oficial da Google antes de decidir.*

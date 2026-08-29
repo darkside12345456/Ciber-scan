@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Scanner de Privacidade</string>
+    <string name="scan">Analisar</string>
+    <string name="rescan">Analisar de novo</string>
+    <string name="privacy_score">Score de privacidade</string>
+    <string name="manage_permissions">Gerir permissões nas Definições</string>
+    <string name="include_system_apps">Incluir apps de sistema</string>
+    <string name="local_processing_note">Tudo é processado localmente — nada sai do teu dispositivo.</string>
+</resources>
