@@ -37,7 +37,8 @@ import com.jp.privacyscanner.ui.components.ScoreGauge
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
-    onAppClick: (String) -> Unit
+    onAppClick: (String) -> Unit,
+    onToggleMonitoring: (Boolean) -> Unit
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -60,7 +61,7 @@ fun HomeScreen(
             when {
                 state.isScanning && state.apps.isEmpty() -> LoadingState()
                 !state.hasScanned -> EmptyState()
-                else -> ResultsList(state, viewModel, onAppClick)
+                else -> ResultsList(state, viewModel, onAppClick, onToggleMonitoring)
             }
         }
     }
@@ -104,10 +105,12 @@ private fun EmptyState() {
 private fun ResultsList(
     state: HomeUiState,
     viewModel: HomeViewModel,
-    onAppClick: (String) -> Unit
+    onAppClick: (String) -> Unit,
+    onToggleMonitoring: (Boolean) -> Unit
 ) {
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         item { GlobalScoreCard(state) }
+        item { MonitoringCard(state, onToggleMonitoring) }
         item { SystemAppsToggle(state, viewModel) }
         item {
             Text(
@@ -148,6 +151,33 @@ private fun GlobalScoreCard(state: HomeUiState) {
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun MonitoringCard(state: HomeUiState, onToggle: (Boolean) -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "Monitorização contínua",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    "Avisa-te quando uma app passa a ter permissões sensíveis.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Switch(
+                checked = state.monitoringEnabled,
+                onCheckedChange = onToggle
+            )
         }
     }
 }

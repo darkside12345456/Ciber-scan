@@ -4,7 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.jp.privacyscanner.data.model.AppInfo
+import com.jp.privacyscanner.data.monitoring.MonitoringScheduler
 import com.jp.privacyscanner.domain.PrivacyRepository
+import com.jp.privacyscanner.util.AppPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,6 +19,7 @@ data class HomeUiState(
     val globalScore: Int = 100,
     val apps: List<AppInfo> = emptyList(),
     val includeSystemApps: Boolean = false,
+    val monitoringEnabled: Boolean = false,
     val error: String? = null
 ) {
     val riskyAppCount: Int
@@ -26,8 +29,11 @@ data class HomeUiState(
 class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repository = PrivacyRepository(app)
+    private val prefs = AppPreferences(app)
 
-    private val _uiState = MutableStateFlow(HomeUiState())
+    private val _uiState = MutableStateFlow(
+        HomeUiState(monitoringEnabled = prefs.monitoringEnabled)
+    )
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     fun scan() {
@@ -59,4 +65,12 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     fun findApp(packageName: String): AppInfo? =
         _uiState.value.apps.firstOrNull { it.packageName == packageName }
+
+    /** Liga/desliga a monitorização contínua em segundo plano. */
+    fun toggleMonitoring(enabled: Boolean) {
+        prefs.monitoringEnabled = enabled
+        _uiState.value = _uiState.value.copy(monitoringEnabled = enabled)
+        val context = getApplication<Application>()
+        if (enabled) MonitoringScheduler.enable(context) else MonitoringScheduler.disable(context)
+    }
 }

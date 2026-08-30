@@ -1,9 +1,15 @@
 package com.jp.privacyscanner
 
 import android.app.Application
+import com.jp.privacyscanner.data.monitoring.MonitoringNotifier
 
 /**
- * Classe Application. Ponto de arranque para inicializações globais futuras
- * (ex.: WorkManager para a monitorização contínua premium).
+ * Classe Application. Cria o canal de notificações usado pela monitorização
+ * contínua em segundo plano.
  */
-class PrivacyScannerApp : Application()
+class PrivacyScannerApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        MonitoringNotifier.ensureChannel(this)
+    }
+}

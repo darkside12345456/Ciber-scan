@@ -1,9 +1,13 @@
 package com.jp.privacyscanner
 
+import android.Manifest
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -69,9 +73,21 @@ private fun PrivacyScannerNav() {
             )
         }
         composable(Routes.HOME) {
+            // Pedido da permissão de notificações (Android 13+). A monitorização
+            // é ativada de qualquer forma; sem a permissão apenas não notifica.
+            val notifLauncher = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { /* resultado ignorado: o toggle já refletiu a escolha */ }
+
             HomeScreen(
                 viewModel = homeViewModel,
-                onAppClick = { pkg -> navController.navigate(Routes.detail(pkg)) }
+                onAppClick = { pkg -> navController.navigate(Routes.detail(pkg)) },
+                onToggleMonitoring = { enabled ->
+                    if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    }
+                    homeViewModel.toggleMonitoring(enabled)
+                }
             )
         }
         composable(Routes.DETAIL) { backStackEntry ->
