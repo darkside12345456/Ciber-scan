@@ -17,10 +17,13 @@ relatório técnico `relatoriotecnicoappprivacidade.md`.
   câmara, contactos, SMS, etc.).
 - ✅ **Explicação em linguagem simples** de cada permissão sensível — o valor
   técnico credível que distingue a app.
+- ✅ **Recomendações acionáveis por app** ("Desliga já: microfone", com o porquê),
+  ordenadas por urgência.
+- ✅ **Ecrã de onboarding** que explica a app e justifica o acesso à lista de apps.
 - ✅ **Ordenação das apps por risco** (a mais arriscada primeiro).
 - ✅ **Atalho direto** para as definições de permissão de cada app.
 - ✅ **Histórico** do score global (base de dados local Room).
-- ✅ Testes unitários do motor de scoring.
+- ✅ Testes unitários do motor de scoring e do motor de recomendações (9 testes).
 
 ## Arquitetura
 

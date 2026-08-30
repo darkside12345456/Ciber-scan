@@ -28,10 +28,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
 import com.jp.privacyscanner.data.model.AppInfo
 import com.jp.privacyscanner.data.model.PermissionInfo
+import com.jp.privacyscanner.data.recommendations.Recommendation
+import com.jp.privacyscanner.data.recommendations.RecommendationEngine
 import com.jp.privacyscanner.ui.components.RiskChip
 import com.jp.privacyscanner.ui.components.ScoreGauge
+import com.jp.privacyscanner.ui.theme.colorFor
 import com.jp.privacyscanner.util.SettingsNavigator
 
 @Composable
@@ -76,6 +82,14 @@ fun AppDetailScreen(
                     Spacer(Modifier.width(8.dp))
                     Text("Gerir permissões nas Definições")
                 }
+            }
+
+            val recommendations = RecommendationEngine.forApp(app)
+            if (recommendations.isNotEmpty()) {
+                item { SectionTitle("Recomendações") }
+                items(recommendations) { RecommendationCard(it) }
+            } else {
+                item { AllClearCard() }
             }
 
             val sensitive = app.permissions
@@ -131,6 +145,51 @@ private fun SectionTitle(text: String) {
         fontWeight = FontWeight.Bold,
         modifier = Modifier.padding(top = 8.dp)
     )
+}
+
+@Composable
+private fun RecommendationCard(rec: Recommendation) {
+    val color = colorFor(rec.severity)
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth()) {
+            // Faixa lateral colorida a sinalizar a urgência.
+            Spacer(
+                Modifier
+                    .width(6.dp)
+                    .height(72.dp)
+                    .clip(RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
+                    .background(color)
+            )
+            Column(Modifier.padding(12.dp)) {
+                Text(
+                    rec.title.replaceFirstChar { it.uppercase() },
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = color
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(rec.rationale, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun AllClearCard() {
+    Card(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                "Sem ações urgentes",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Esta app não tem permissões sensíveis concedidas que justifiquem alterações. Bom sinal.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
 }
 
 @Composable
