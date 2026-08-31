@@ -10,7 +10,7 @@ import com.jp.privacyscanner.data.bugbounty.BountyProgram
 
 @Database(
     entities = [ScoreHistory::class, BountyProgram::class, BountyFinding::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

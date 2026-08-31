@@ -28,8 +28,10 @@ relatório técnico `relatoriotecnicoappprivacidade.md`.
 - ✅ **Módulo Bug Bounty** (para alvos autorizados): gestão de programas e âmbito
   (editável), checklist metodológica por fases, registo de achados e geração de
   rascunho de relatório em Markdown, com **exportação para PDF** e partilha.
-- ✅ Testes unitários da lógica pura — scoring, recomendações, monitorização e
-  gerador de relatório (16 testes).
+- ✅ **Calculadora CVSS v3.1** (métricas Base) integrada no editor de achados:
+  calcula o score e a severidade e preenche-os no relatório.
+- ✅ Testes unitários da lógica pura — scoring, recomendações, monitorização,
+  gerador de relatório e CVSS v3.1 (22 testes).
 
 > **Nota ética do módulo Bug Bounty:** é uma ferramenta *organizacional e
 > educativa* (workspace + checklist + relatório). Não executa ataques nem

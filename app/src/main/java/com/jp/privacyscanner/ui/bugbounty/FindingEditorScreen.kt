@@ -42,6 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import android.widget.Toast
 import com.jp.privacyscanner.data.bugbounty.BountyFinding
 import com.jp.privacyscanner.data.bugbounty.BountyProgram
+import com.jp.privacyscanner.data.bugbounty.CvssV31
 import com.jp.privacyscanner.data.bugbounty.FindingStatus
 import com.jp.privacyscanner.data.bugbounty.ReportGenerator
 import com.jp.privacyscanner.data.bugbounty.Severity
@@ -92,7 +93,10 @@ private fun FindingEditorContent(
     var steps by remember { mutableStateOf(existing?.steps ?: "") }
     var impact by remember { mutableStateOf(existing?.impact ?: "") }
     var remediation by remember { mutableStateOf(existing?.remediation ?: "") }
+    var cvssVector by remember { mutableStateOf(existing?.cvssVector ?: "") }
+    var cvssScore by remember { mutableStateOf(existing?.cvssScore ?: 0.0) }
     var showReport by remember { mutableStateOf(false) }
+    var showCvss by remember { mutableStateOf(false) }
 
     fun build(): BountyFinding = (existing ?: BountyFinding(programId = programId, title = "")).copy(
         programId = programId,
@@ -103,7 +107,9 @@ private fun FindingEditorContent(
         description = description,
         steps = steps,
         impact = impact,
-        remediation = remediation
+        remediation = remediation,
+        cvssVector = cvssVector,
+        cvssScore = cvssScore
     )
 
     Scaffold(
@@ -149,6 +155,17 @@ private fun FindingEditorContent(
                 label = { Text("Ativo afetado (URL/endpoint)") }, singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
+
+            OutlinedButton(onClick = { showCvss = true }, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    if (cvssScore > 0.0) {
+                        "CVSS v3.1: $cvssScore (${CvssV31.severityLabel(cvssScore)})"
+                    } else {
+                        "Calcular CVSS v3.1"
+                    }
+                )
+            }
+
             MultiField("Descrição", description) { description = it }
             MultiField("Passos para reproduzir", steps) { steps = it }
             MultiField("Impacto", impact) { impact = it }
@@ -167,6 +184,18 @@ private fun FindingEditorContent(
 
             Spacer(Modifier.height(24.dp))
         }
+    }
+
+    if (showCvss) {
+        CvssDialog(
+            onDismiss = { showCvss = false },
+            onApply = { metrics ->
+                cvssScore = CvssV31.baseScore(metrics)
+                cvssVector = CvssV31.vector(metrics)
+                severity = CvssV31.toSeverity(cvssScore)
+                showCvss = false
+            }
+        )
     }
 
     if (showReport && program != null) {
@@ -224,6 +253,60 @@ private fun <T> EnumDropdown(
             }
         }
     }
+}
+
+@Composable
+private fun CvssDialog(
+    onDismiss: () -> Unit,
+    onApply: (CvssV31.Metrics) -> Unit
+) {
+    var av by remember { mutableStateOf(CvssV31.AttackVector.NETWORK) }
+    var ac by remember { mutableStateOf(CvssV31.AttackComplexity.LOW) }
+    var pr by remember { mutableStateOf(CvssV31.PrivilegesRequired.NONE) }
+    var ui by remember { mutableStateOf(CvssV31.UserInteraction.NONE) }
+    var scope by remember { mutableStateOf(CvssV31.Scope.UNCHANGED) }
+    var c by remember { mutableStateOf(CvssV31.Impact.NONE) }
+    var i by remember { mutableStateOf(CvssV31.Impact.NONE) }
+    var a by remember { mutableStateOf(CvssV31.Impact.NONE) }
+
+    val metrics = CvssV31.Metrics(av, ac, pr, ui, scope, c, i, a)
+    val score = CvssV31.baseScore(metrics)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("CVSS v3.1 — Base") },
+        text = {
+            Column(
+                Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    "Score: $score  ·  ${CvssV31.severityLabel(score)}",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                EnumDropdown("Attack Vector (AV)", av.label,
+                    CvssV31.AttackVector.entries.map { it.label to it }, { av = it })
+                EnumDropdown("Attack Complexity (AC)", ac.label,
+                    CvssV31.AttackComplexity.entries.map { it.label to it }, { ac = it })
+                EnumDropdown("Privileges Required (PR)", pr.label,
+                    CvssV31.PrivilegesRequired.entries.map { it.label to it }, { pr = it })
+                EnumDropdown("User Interaction (UI)", ui.label,
+                    CvssV31.UserInteraction.entries.map { it.label to it }, { ui = it })
+                EnumDropdown("Scope (S)", scope.label,
+                    CvssV31.Scope.entries.map { it.label to it }, { scope = it })
+                EnumDropdown("Confidentiality (C)", c.label,
+                    CvssV31.Impact.entries.map { it.label to it }, { c = it })
+                EnumDropdown("Integrity (I)", i.label,
+                    CvssV31.Impact.entries.map { it.label to it }, { i = it })
+                EnumDropdown("Availability (A)", a.label,
+                    CvssV31.Impact.entries.map { it.label to it }, { a = it })
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onApply(metrics) }) { Text("Aplicar") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+    )
 }
 
 @Composable

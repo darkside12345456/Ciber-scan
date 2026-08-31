@@ -14,6 +14,9 @@ object ReportGenerator {
         sb.appendLine("**Programa:** ${program.name.ifBlank { "—" }}")
         if (program.platform.isNotBlank()) sb.appendLine("**Plataforma:** ${program.platform}")
         sb.appendLine("**Severidade:** ${finding.severityEnum.label}")
+        if (finding.cvssScore > 0.0) {
+            sb.appendLine("**CVSS v3.1:** ${finding.cvssScore} (${finding.cvssVector})")
+        }
         sb.appendLine("**Estado:** ${finding.statusEnum.label}")
         if (finding.affectedAsset.isNotBlank()) {
             sb.appendLine("**Ativo afetado:** ${finding.affectedAsset}")

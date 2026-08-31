@@ -24,6 +24,8 @@ data class BountyFinding(
     val steps: String = "",
     val impact: String = "",
     val remediation: String = "",
+    val cvssVector: String = "",
+    val cvssScore: Double = 0.0,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 ) {
