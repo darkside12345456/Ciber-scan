@@ -38,12 +38,14 @@ import com.jp.privacyscanner.ui.components.ScoreGauge
 fun HomeScreen(
     viewModel: HomeViewModel,
     onAppClick: (String) -> Unit,
-    onToggleMonitoring: (Boolean) -> Unit
+    onToggleMonitoring: (Boolean) -> Unit,
+    bottomBar: @Composable () -> Unit = {}
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Scanner de Privacidade") }) },
+        bottomBar = bottomBar,
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { viewModel.scan() },

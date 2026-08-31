@@ -23,7 +23,18 @@ relatório técnico `relatoriotecnicoappprivacidade.md`.
 - ✅ **Ordenação das apps por risco** (a mais arriscada primeiro).
 - ✅ **Atalho direto** para as definições de permissão de cada app.
 - ✅ **Histórico** do score global (base de dados local Room).
-- ✅ Testes unitários do motor de scoring e do motor de recomendações (9 testes).
+- ✅ **Monitorização contínua** em segundo plano (`WorkManager`): avisa quando uma
+  app passa a ter permissões sensíveis novas.
+- ✅ **Módulo Bug Bounty** (para alvos autorizados): gestão de programas e âmbito,
+  checklist metodológica por fases, registo de achados e geração de rascunho de
+  relatório em Markdown.
+- ✅ Testes unitários da lógica pura — scoring, recomendações, monitorização e
+  gerador de relatório (16 testes).
+
+> **Nota ética do módulo Bug Bounty:** é uma ferramenta *organizacional e
+> educativa* (workspace + checklist + relatório). Não executa ataques nem
+> varreduras automáticas. Usa-a apenas em alvos dentro do âmbito autorizado de
+> um programa.
 
 ## Arquitetura
 
