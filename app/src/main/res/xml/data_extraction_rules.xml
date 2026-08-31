@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <data-extraction-rules>
     <cloud-backup>
-        <!-- Regras de backup para a cloud (Android 12+). -->
+        <!-- A chave da API do Claude nunca é incluída em backups para a cloud. -->
+        <exclude domain="sharedpref" path="ai_secure_prefs.xml" />
+        <exclude domain="sharedpref" path="ai_prefs_fallback.xml" />
     </cloud-backup>
     <device-transfer>
-        <!-- Regras de transferência dispositivo-a-dispositivo. -->
+        <!-- Nem em transferências dispositivo-a-dispositivo. -->
+        <exclude domain="sharedpref" path="ai_secure_prefs.xml" />
+        <exclude domain="sharedpref" path="ai_prefs_fallback.xml" />
     </device-transfer>
 </data-extraction-rules>

@@ -30,6 +30,15 @@ relatório técnico `relatoriotecnicoappprivacidade.md`.
   rascunho de relatório em Markdown, com **exportação para PDF** e partilha.
 - ✅ **Calculadora CVSS v3.1** (métricas Base) integrada no editor de achados:
   calcula o score e a severidade e preenche-os no relatório.
+- ✅ **Assistente de redação com IA** (opcional, opt-in): melhora o rascunho do
+  relatório via API do Claude, com a chave do próprio utilizador (guardada
+  cifrada). É a **única** funcionalidade que usa a internet.
+
+> **Privacidade da IA:** o assistente é a única parte da app que envia dados para
+> fora (o texto do relatório → API do Claude). Está desligado por omissão, requer
+> a chave do utilizador e a permissão `INTERNET` só existe por causa dele. Todo o
+> resto — scanner, scoring, monitorização, bug bounty — é 100% local. Declarar na
+> secção *Data safety* da Play Store.
 - ✅ Testes unitários da lógica pura — scoring, recomendações, monitorização,
   gerador de relatório e CVSS v3.1 (22 testes).
 

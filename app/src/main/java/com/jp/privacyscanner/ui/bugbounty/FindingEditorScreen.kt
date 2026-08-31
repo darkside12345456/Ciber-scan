@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -32,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -42,11 +44,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import android.widget.Toast
 import com.jp.privacyscanner.data.bugbounty.BountyFinding
 import com.jp.privacyscanner.data.bugbounty.BountyProgram
+import com.jp.privacyscanner.data.ai.AiSettings
+import com.jp.privacyscanner.data.ai.ClaudeClient
 import com.jp.privacyscanner.data.bugbounty.CvssV31
 import com.jp.privacyscanner.data.bugbounty.FindingStatus
 import com.jp.privacyscanner.data.bugbounty.ReportGenerator
 import com.jp.privacyscanner.data.bugbounty.Severity
 import com.jp.privacyscanner.util.PdfExporter
+import kotlinx.coroutines.launch
 
 @Composable
 fun FindingEditorScreen(
@@ -313,29 +318,110 @@ private fun CvssDialog(
 private fun ReportDialog(markdown: String, fileName: String, onDismiss: () -> Unit) {
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val aiSettings = remember { AiSettings(context) }
+
+    var text by remember { mutableStateOf(markdown) }
+    var loading by remember { mutableStateOf(false) }
+    var showKeyDialog by remember { mutableStateOf(false) }
+
+    fun improveWithAi() {
+        loading = true
+        scope.launch {
+            when (val result = ClaudeClient.improveReport(aiSettings.apiKey, text)) {
+                is ClaudeClient.Result.Success -> text = result.text
+                is ClaudeClient.Result.Error ->
+                    Toast.makeText(context, result.message, Toast.LENGTH_LONG).show()
+            }
+            loading = false
+        }
+    }
+
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = { if (!loading) onDismiss() },
         title = { Text("Rascunho de relatório") },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                Text(markdown, style = MaterialTheme.typography.bodySmall)
+                if (loading) {
+                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        CircularProgressIndicator(Modifier.height(18.dp).width(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("A melhorar com IA…", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
+                Text(text, style = MaterialTheme.typography.bodySmall)
             }
         },
         confirmButton = {
-            Row {
-                TextButton(onClick = {
-                    clipboard.setText(AnnotatedString(markdown))
-                    Toast.makeText(context, "Relatório copiado", Toast.LENGTH_SHORT).show()
-                }) { Text("Copiar") }
-                TextButton(onClick = {
-                    runCatching { PdfExporter.shareReport(context, fileName, markdown) }
-                        .onFailure {
-                            Toast.makeText(context, "Falha ao gerar PDF", Toast.LENGTH_SHORT).show()
-                        }
-                    onDismiss()
-                }) { Text("Exportar PDF") }
+            Column {
+                Row {
+                    TextButton(enabled = !loading, onClick = {
+                        clipboard.setText(AnnotatedString(text))
+                        Toast.makeText(context, "Relatório copiado", Toast.LENGTH_SHORT).show()
+                    }) { Text("Copiar") }
+                    TextButton(enabled = !loading, onClick = {
+                        runCatching { PdfExporter.shareReport(context, fileName, text) }
+                            .onFailure {
+                                Toast.makeText(context, "Falha ao gerar PDF", Toast.LENGTH_SHORT).show()
+                            }
+                        onDismiss()
+                    }) { Text("Exportar PDF") }
+                }
+                TextButton(enabled = !loading, onClick = {
+                    if (aiSettings.isConfigured) improveWithAi() else showKeyDialog = true
+                }) { Text("Melhorar com IA") }
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Fechar") } }
+        dismissButton = {
+            TextButton(enabled = !loading, onClick = onDismiss) { Text("Fechar") }
+        }
+    )
+
+    if (showKeyDialog) {
+        ApiKeyDialog(
+            aiSettings = aiSettings,
+            onDismiss = { showKeyDialog = false },
+            onSaved = {
+                showKeyDialog = false
+                improveWithAi()
+            }
+        )
+    }
+}
+
+@Composable
+private fun ApiKeyDialog(
+    aiSettings: AiSettings,
+    onDismiss: () -> Unit,
+    onSaved: () -> Unit
+) {
+    var key by remember { mutableStateOf(aiSettings.apiKey) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Assistente de IA (opcional)") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "Ao ativar, o texto do relatório é enviado para a API do Claude com a " +
+                        "tua própria chave. É a única funcionalidade que usa a internet — todo " +
+                        "o resto da app é local. A chave fica guardada cifrada no dispositivo.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                OutlinedTextField(
+                    value = key, onValueChange = { key = it },
+                    label = { Text("Chave da API (sk-ant-…)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = key.isNotBlank(),
+                onClick = { aiSettings.apiKey = key; onSaved() }
+            ) { Text("Guardar e usar") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
     )
 }
