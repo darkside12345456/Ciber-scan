@@ -45,6 +45,7 @@ import com.jp.privacyscanner.data.bugbounty.BountyProgram
 import com.jp.privacyscanner.data.bugbounty.FindingStatus
 import com.jp.privacyscanner.data.bugbounty.ReportGenerator
 import com.jp.privacyscanner.data.bugbounty.Severity
+import com.jp.privacyscanner.util.PdfExporter
 
 @Composable
 fun FindingEditorScreen(
@@ -169,11 +170,23 @@ private fun FindingEditorContent(
     }
 
     if (showReport && program != null) {
+        val current = program
         ReportDialog(
-            markdown = ReportGenerator.forFinding(program, build()),
+            markdown = ReportGenerator.forFinding(current, build()),
+            fileName = reportFileName(current.name, title),
             onDismiss = { showReport = false }
         )
     }
+}
+
+/** Nome de ficheiro seguro para o PDF, a partir do programa e do título. */
+private fun reportFileName(programName: String, title: String): String {
+    val base = "${programName}_${title}".ifBlank { "relatorio" }
+        .lowercase()
+        .replace(Regex("[^a-z0-9]+"), "-")
+        .trim('-')
+        .take(60)
+    return (base.ifBlank { "relatorio" }) + ".pdf"
 }
 
 @Composable
@@ -214,7 +227,7 @@ private fun <T> EnumDropdown(
 }
 
 @Composable
-private fun ReportDialog(markdown: String, onDismiss: () -> Unit) {
+private fun ReportDialog(markdown: String, fileName: String, onDismiss: () -> Unit) {
     val clipboard = LocalClipboardManager.current
     val context = LocalContext.current
     AlertDialog(
@@ -226,11 +239,19 @@ private fun ReportDialog(markdown: String, onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            TextButton(onClick = {
-                clipboard.setText(AnnotatedString(markdown))
-                Toast.makeText(context, "Relatório copiado", Toast.LENGTH_SHORT).show()
-                onDismiss()
-            }) { Text("Copiar") }
+            Row {
+                TextButton(onClick = {
+                    clipboard.setText(AnnotatedString(markdown))
+                    Toast.makeText(context, "Relatório copiado", Toast.LENGTH_SHORT).show()
+                }) { Text("Copiar") }
+                TextButton(onClick = {
+                    runCatching { PdfExporter.shareReport(context, fileName, markdown) }
+                        .onFailure {
+                            Toast.makeText(context, "Falha ao gerar PDF", Toast.LENGTH_SHORT).show()
+                        }
+                    onDismiss()
+                }) { Text("Exportar PDF") }
+            }
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Fechar") } }
     )

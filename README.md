@@ -25,9 +25,9 @@ relatório técnico `relatoriotecnicoappprivacidade.md`.
 - ✅ **Histórico** do score global (base de dados local Room).
 - ✅ **Monitorização contínua** em segundo plano (`WorkManager`): avisa quando uma
   app passa a ter permissões sensíveis novas.
-- ✅ **Módulo Bug Bounty** (para alvos autorizados): gestão de programas e âmbito,
-  checklist metodológica por fases, registo de achados e geração de rascunho de
-  relatório em Markdown.
+- ✅ **Módulo Bug Bounty** (para alvos autorizados): gestão de programas e âmbito
+  (editável), checklist metodológica por fases, registo de achados e geração de
+  rascunho de relatório em Markdown, com **exportação para PDF** e partilha.
 - ✅ Testes unitários da lógica pura — scoring, recomendações, monitorização e
   gerador de relatório (16 testes).
 

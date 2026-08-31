@@ -13,14 +13,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,6 +60,7 @@ fun BountyProgramScreen(
     val findings by viewModel.findings(programId)
         .collectAsStateWithLifecycle(initialValue = emptyList())
     var confirmDelete by remember { mutableStateOf(false) }
+    var editScope by remember { mutableStateOf(false) }
 
     val current = program
 
@@ -70,6 +75,9 @@ fun BountyProgramScreen(
                 },
                 actions = {
                     if (current != null) {
+                        IconButton(onClick = { editScope = true }) {
+                            Icon(Icons.Default.Edit, contentDescription = "Editar âmbito")
+                        }
                         IconButton(onClick = { confirmDelete = true }) {
                             Icon(Icons.Default.Delete, contentDescription = "Apagar programa")
                         }
@@ -145,6 +153,74 @@ fun BountyProgramScreen(
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancelar") } }
         )
     }
+
+    if (editScope && current != null) {
+        EditScopeDialog(
+            program = current,
+            onDismiss = { editScope = false },
+            onSave = { updated ->
+                viewModel.updateProgram(updated)
+                editScope = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun EditScopeDialog(
+    program: BountyProgram,
+    onDismiss: () -> Unit,
+    onSave: (BountyProgram) -> Unit
+) {
+    var platform by remember { mutableStateOf(program.platform) }
+    var inScope by remember { mutableStateOf(program.inScope) }
+    var outOfScope by remember { mutableStateOf(program.outOfScope) }
+    var policyUrl by remember { mutableStateOf(program.policyUrl) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar âmbito") },
+        text = {
+            Column(
+                Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = platform, onValueChange = { platform = it },
+                    label = { Text("Plataforma") }, singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = inScope, onValueChange = { inScope = it },
+                    label = { Text("In-scope (um por linha)") },
+                    modifier = Modifier.fillMaxWidth().height(110.dp)
+                )
+                OutlinedTextField(
+                    value = outOfScope, onValueChange = { outOfScope = it },
+                    label = { Text("Out-of-scope (um por linha)") },
+                    modifier = Modifier.fillMaxWidth().height(110.dp)
+                )
+                OutlinedTextField(
+                    value = policyUrl, onValueChange = { policyUrl = it },
+                    label = { Text("URL da política") }, singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onSave(
+                    program.copy(
+                        platform = platform.trim(),
+                        inScope = inScope.trim(),
+                        outOfScope = outOfScope.trim(),
+                        policyUrl = policyUrl.trim()
+                    )
+                )
+            }) { Text("Guardar") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } }
+    )
 }
 
 @Composable
