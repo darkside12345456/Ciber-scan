@@ -33,6 +33,8 @@ relatório técnico `relatoriotecnicoappprivacidade.md`.
 - ✅ **Assistente de redação com IA** (opcional, opt-in): melhora o rascunho do
   relatório via API do Claude, com a chave do próprio utilizador (guardada
   cifrada). É a **única** funcionalidade que usa a internet.
+- ✅ **Ecrã de Definições**: gestão da chave da IA (definir, trocar, apagar) e
+  nota de privacidade. Score CVSS visível na lista de achados.
 
 > **Privacidade da IA:** o assistente é a única parte da app que envia dados para
 > fora (o texto do relatório → API do Claude). Está desligado por omissão, requer

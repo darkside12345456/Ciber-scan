@@ -37,6 +37,7 @@ import com.jp.privacyscanner.ui.detail.AppDetailScreen
 import com.jp.privacyscanner.ui.home.HomeScreen
 import com.jp.privacyscanner.ui.home.HomeViewModel
 import com.jp.privacyscanner.ui.onboarding.OnboardingScreen
+import com.jp.privacyscanner.ui.settings.SettingsScreen
 import com.jp.privacyscanner.ui.theme.PrivacyScannerTheme
 import com.jp.privacyscanner.util.AppPreferences
 
@@ -64,6 +65,7 @@ private object Routes {
     const val BOUNTY = "bounty"
     const val BOUNTY_PROGRAM = "bounty/program/{programId}"
     const val FINDING = "bounty/finding/{programId}/{findingId}"
+    const val SETTINGS = "settings"
     fun detail(packageName: String) = "detail/$packageName"
     fun program(id: Long) = "bounty/program/$id"
     fun finding(programId: Long, findingId: Long) = "bounty/finding/$programId/$findingId"
@@ -108,6 +110,7 @@ private fun PrivacyScannerNav() {
                     }
                     homeViewModel.toggleMonitoring(enabled)
                 },
+                onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 bottomBar = { MainBottomBar(navController) }
             )
         }
@@ -122,8 +125,12 @@ private fun PrivacyScannerNav() {
             BountyListScreen(
                 viewModel = bountyViewModel,
                 onProgramClick = { id -> navController.navigate(Routes.program(id)) },
+                onOpenSettings = { navController.navigate(Routes.SETTINGS) },
                 bottomBar = { MainBottomBar(navController) }
             )
+        }
+        composable(Routes.SETTINGS) {
+            SettingsScreen(onBack = { navController.popBackStack() })
         }
         composable(Routes.BOUNTY_PROGRAM) { backStackEntry ->
             val id = backStackEntry.arguments?.getString("programId")?.toLongOrNull() ?: 0L

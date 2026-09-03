@@ -256,8 +256,9 @@ private fun FindingRow(finding: BountyFinding, onClick: () -> Unit) {
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold
                 )
+                val cvss = if (finding.cvssScore > 0.0) "CVSS ${finding.cvssScore} · " else ""
                 Text(
-                    "${finding.severityEnum.label} · ${finding.statusEnum.label}",
+                    "$cvss${finding.severityEnum.label} · ${finding.statusEnum.label}",
                     style = MaterialTheme.typography.bodySmall,
                     color = color
                 )

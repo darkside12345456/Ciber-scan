@@ -10,10 +10,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -36,13 +38,23 @@ import com.jp.privacyscanner.data.bugbounty.BountyProgram
 fun BountyListScreen(
     viewModel: BountyViewModel,
     onProgramClick: (Long) -> Unit,
+    onOpenSettings: () -> Unit = {},
     bottomBar: @Composable () -> Unit
 ) {
     val programs by viewModel.programs().collectAsStateWithLifecycle(initialValue = emptyList())
     var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Bug Bounty") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("Bug Bounty") },
+                actions = {
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Definições")
+                    }
+                }
+            )
+        },
         bottomBar = bottomBar,
         floatingActionButton = {
             FloatingActionButton(onClick = { showDialog = true }) {
