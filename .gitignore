@@ -18,3 +18,7 @@ captures/
 
 # Logs
 *.log
+
+# Entregáveis gerados (não são código-fonte)
+ScannerPrivacidade-codigo.pdf
+*.pdf
