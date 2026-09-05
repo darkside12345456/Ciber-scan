@@ -29,10 +29,17 @@ jobs:
 
       - run: chmod +x gradlew
 
-      - name: Testes unitários + APK de debug
+      - name: Testes unitários + APKs de debug (Scanner + Bug Bounty)
         run: ./gradlew testDebugUnitTest assembleDebug --no-daemon
 
-      - uses: actions/upload-artifact@v4
+      - name: APK do Scanner
+        uses: actions/upload-artifact@v4
         with:
-          name: privacyscanner-debug-apk
-          path: app/build/outputs/apk/debug/*.apk
+          name: scanner-debug-apk
+          path: app-scanner/build/outputs/apk/debug/*.apk
+
+      - name: APK do Bug Bounty
+        uses: actions/upload-artifact@v4
+        with:
+          name: bugbounty-debug-apk
+          path: app-bounty/build/outputs/apk/debug/*.apk

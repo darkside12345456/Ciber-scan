@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!--
+      A base de dados contém o snapshot de permissões, que descreve as apps
+      instaladas no dispositivo. Coerente com privacy by design, não a enviamos
+      para a cloud.
+    -->
+    <exclude domain="database" path="privacy_scanner.db" />
+</full-backup-content>

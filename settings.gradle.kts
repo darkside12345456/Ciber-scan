@@ -19,5 +19,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PrivacyScanner"
-include(":app")
+rootProject.name = "PrivacyScannerSuite"
+include(":core")
+include(":app-scanner")
+include(":app-bounty")

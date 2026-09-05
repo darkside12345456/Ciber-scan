@@ -1,11 +1,22 @@
-# Scanner de Privacidade — App Android
+# PrivacyScanner Suite — duas apps Android
 
-App Android nativa que analisa as permissões das apps instaladas, atribui um
-**score de privacidade** e recomenda ações concretas ao utilizador. Baseada no
-relatório técnico `relatoriotecnicoappprivacidade.md`.
+Projeto Gradle com **dois produtos separados** e uma biblioteca comum, para que
+cada app tenha o seu público, a sua ficha na Play Store e a sua revisão de
+permissões (ver `docs/`):
 
-> **Princípio central:** *privacy by design*. Todo o processamento é **local**.
-> Nenhum dado do utilizador sai do dispositivo.
+| Módulo | O que é |
+|---|---|
+| **`:app-scanner`** | **Scanner de Privacidade** — analisa as permissões das apps instaladas, dá um score e recomenda ações. 100% local, **sem internet**. `applicationId = com.jp.privacyscanner`. |
+| **`:app-bounty`** | **Bug Bounty** — workspace para alvos autorizados (programas, checklist, achados, CVSS, relatório + assistente de IA opcional). `applicationId = com.jp.bugbounty`. |
+| **`:core`** | Tema/design base partilhado pelas duas apps. |
+
+Porquê separadas: juntar o `QUERY_ALL_PACKAGES` (Scanner) com ferramentas de bug
+bounty na mesma app aumenta o risco de rejeição na Google e confunde públicos. O
+assistente de IA (única funcionalidade com internet) vive **só** no Bug Bounty,
+para o Scanner poder prometer, sem asteriscos, que nada sai do dispositivo.
+
+> **Princípio central:** *privacy by design*. No Scanner, todo o processamento é
+> **local** e não há sequer permissão de internet.
 
 ---
 
@@ -88,11 +99,12 @@ Requer **Android Studio** (Ladybug ou mais recente) e um dispositivo/emulador
 com **Android 8.0+ (API 26)**.
 
 ```bash
-# Testes unitários do motor de scoring
+# Testes unitários das duas apps
 ./gradlew test
 
-# Instalar num dispositivo ligado
-./gradlew installDebug
+# Instalar o Scanner / o Bug Bounty num dispositivo ligado
+./gradlew :app-scanner:installDebug
+./gradlew :app-bounty:installDebug
 ```
 
 > **Nota:** ao compilar pela primeira vez o Gradle descarrega o Android Gradle

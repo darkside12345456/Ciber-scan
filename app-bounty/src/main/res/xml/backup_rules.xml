@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- A chave da API do Claude NUNCA vai para backup. -->
+    <exclude domain="sharedpref" path="ai_secure_prefs.xml" />
+    <exclude domain="sharedpref" path="ai_prefs_fallback.xml" />
+</full-backup-content>

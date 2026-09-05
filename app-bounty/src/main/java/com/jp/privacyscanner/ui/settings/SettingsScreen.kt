@@ -1,0 +1,134 @@
+package com.jp.privacyscanner.ui.settings
+
+import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.jp.privacyscanner.data.ai.AiSettings
+
+/**
+ * Definições da app de Bug Bounty. Centra-se na gestão do assistente de IA — o
+ * único ponto onde a app envia dados para fora. Dá ao utilizador controlo
+ * total: ver estado, definir/trocar e apagar a chave.
+ */
+@Composable
+fun SettingsScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
+    val aiSettings = remember { AiSettings(context) }
+
+    var key by remember { mutableStateOf(aiSettings.apiKey) }
+    var configured by remember { mutableStateOf(aiSettings.isConfigured) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Definições") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(
+            Modifier.fillMaxSize().padding(padding).padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                "Assistente de IA",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        if (configured) "● Ativo — chave configurada" else "○ Inativo — sem chave",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        "O assistente melhora os rascunhos de relatório via API do Claude, com a " +
+                            "tua chave. É a ÚNICA funcionalidade que usa a internet: o texto do " +
+                            "relatório é enviado para a Anthropic. A chave nunca vai para backups.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    if (aiSettings.isEncrypted) {
+                        Text(
+                            "A chave é guardada cifrada neste dispositivo.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    } else {
+                        Text(
+                            "Atenção: o armazenamento cifrado não está disponível neste " +
+                                "dispositivo. Se guardares a chave, ela ficará em texto simples. " +
+                                "Podes preferir não a guardar aqui.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    Text(
+                        "Nota: muitos programas de bug bounty têm regras de confidencialidade " +
+                            "(NDA). Enviar o rascunho para uma API externa pode violá-las — " +
+                            "confirma o que o programa permite antes de usar.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    OutlinedTextField(
+                        value = key,
+                        onValueChange = { key = it },
+                        label = { Text("Chave da API (sk-ant-…)") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            enabled = key.isNotBlank(),
+                            onClick = {
+                                aiSettings.apiKey = key
+                                configured = aiSettings.isConfigured
+                                Toast.makeText(context, "Chave guardada", Toast.LENGTH_SHORT).show()
+                            }
+                        ) { Text("Guardar") }
+                        OutlinedButton(
+                            enabled = configured,
+                            onClick = {
+                                aiSettings.clear()
+                                key = ""
+                                configured = false
+                                Toast.makeText(context, "Chave removida", Toast.LENGTH_SHORT).show()
+                            }
+                        ) { Text("Apagar chave") }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- A base de dados descreve as apps instaladas (snapshot) — fica local. -->
+        <exclude domain="database" path="privacy_scanner.db" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="database" path="privacy_scanner.db" />
+    </device-transfer>
+</data-extraction-rules>
