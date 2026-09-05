@@ -15,19 +15,37 @@ import androidx.security.crypto.MasterKey
  */
 class AiSettings(context: Context) {
 
-    private val prefs: SharedPreferences = runCatching {
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
-        EncryptedSharedPreferences.create(
-            context,
-            "ai_secure_prefs",
-            masterKey,
-            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
-    }.getOrElse {
-        context.getSharedPreferences("ai_prefs_fallback", Context.MODE_PRIVATE)
+    /**
+     * true quando a chave está a ser guardada cifrada. Se o Keystore do
+     * dispositivo falhar, cai para preferências normais (texto simples) — e
+     * expõe esta flag para que o ecrã de definições AVISE o utilizador, em vez
+     * de lhe dizer que está cifrada quando não está.
+     */
+    val isEncrypted: Boolean
+
+    private val prefs: SharedPreferences
+
+    init {
+        val encrypted = runCatching {
+            val masterKey = MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
+            EncryptedSharedPreferences.create(
+                context,
+                "ai_secure_prefs",
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        }.getOrNull()
+
+        if (encrypted != null) {
+            prefs = encrypted
+            isEncrypted = true
+        } else {
+            prefs = context.getSharedPreferences("ai_prefs_fallback", Context.MODE_PRIVATE)
+            isEncrypted = false
+        }
     }
 
     var apiKey: String

@@ -32,10 +32,15 @@ class AppScanner(private val context: Context) {
      */
     suspend fun scanInstalledApps(includeSystemApps: Boolean = false): List<AppInfo> =
         withContext(Dispatchers.Default) {
-            val packages = queryInstalledPackages()
-            packages.asSequence()
-                .filter { includeSystemApps || !it.isSystemApp() }
+            // 1) Lista leve de pacotes (sem permissões) — uma resposta pequena.
+            // 2) Permissões pedidas pacote a pacote, para nunca ultrapassar o
+            //    limite de ~1 MB por transação do Binder. Pedir tudo de uma vez
+            //    (getInstalledPackages(GET_PERMISSIONS)) lança
+            //    TransactionTooLargeException em telemóveis com muitas apps.
+            queryInstalledPackages().asSequence()
                 .filter { it.packageName != context.packageName } // não nos analisamos a nós próprios
+                .mapNotNull { base -> packageInfoWithPermissions(base.packageName) }
+                .filter { includeSystemApps || !it.isSystemApp() }
                 .map { it.toAppInfo() }
                 .sortedBy { it.privacyScore }
                 .toList()
@@ -43,14 +48,28 @@ class AppScanner(private val context: Context) {
 
     @Suppress("DEPRECATION")
     private fun queryInstalledPackages(): List<PackageInfo> {
-        val flags = PackageManager.GET_PERMISSIONS
+        // Sem GET_PERMISSIONS: a resposta é pequena e cabe folgadamente no Binder.
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            pm.getInstalledPackages(
-                PackageManager.PackageInfoFlags.of(flags.toLong())
-            )
+            pm.getInstalledPackages(PackageManager.PackageInfoFlags.of(0L))
         } else {
-            pm.getInstalledPackages(flags)
+            pm.getInstalledPackages(0)
         }
+    }
+
+    /** Obtém as permissões de um único pacote, tolerando pacotes entretanto removidos. */
+    @Suppress("DEPRECATION")
+    private fun packageInfoWithPermissions(packageName: String): PackageInfo? = try {
+        val flags = PackageManager.GET_PERMISSIONS
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pm.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
+        } else {
+            pm.getPackageInfo(packageName, flags)
+        }
+    } catch (e: Exception) {
+        // PackageManager.NameNotFoundException ou, raramente, ainda
+        // TransactionTooLargeException num único pacote patológico: ignoramos
+        // esse pacote em vez de deixar cair o scan inteiro.
+        null
     }
 
     private fun PackageInfo.toAppInfo(): AppInfo {

@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.jp.privacyscanner.data.scanner.AppScanner
-import com.jp.privacyscanner.util.AppPreferences
 
 /**
  * Executa periodicamente em segundo plano (via WorkManager): faz um scan,
@@ -20,12 +19,12 @@ class MonitoringWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
-        return runCatching {
-            val prefs = AppPreferences(applicationContext)
+        return try {
+            val store = SnapshotStore(applicationContext)
             val apps = AppScanner(applicationContext).scanInstalledApps(includeSystemApps = false)
 
             val current = MonitoringDiff.buildSnapshot(apps)
-            val previous = prefs.permissionSnapshot
+            val previous = store.load()
 
             // Na primeira execução não há base de comparação: apenas guardamos.
             if (previous.isNotEmpty()) {
@@ -33,11 +32,19 @@ class MonitoringWorker(
                 MonitoringNotifier.notifyChanges(applicationContext, changes)
             }
 
-            prefs.permissionSnapshot = current
+            store.save(current)
             Result.success()
-        }.getOrElse {
-            // Falhas transitórias (ex.: sistema ocupado) podem ser repetidas.
+        } catch (e: android.os.DeadObjectException) {
+            // Sistema momentaneamente indisponível — vale a pena repetir.
             Result.retry()
+        } catch (e: android.os.TransactionTooLargeException) {
+            Result.retry()
+        } catch (e: Exception) {
+            // Erros permanentes (ex.: bug de programação) não se resolvem por
+            // repetição: devolver failure evita um ciclo infinito a gastar
+            // bateria e deixa a falha registada. O trabalho periódico volta a
+            // correr no próximo intervalo agendado.
+            Result.failure()
         }
     }
 }

@@ -9,14 +9,20 @@ import com.jp.privacyscanner.data.bugbounty.BountyFinding
 import com.jp.privacyscanner.data.bugbounty.BountyProgram
 
 @Database(
-    entities = [ScoreHistory::class, BountyProgram::class, BountyFinding::class],
-    version = 3,
+    entities = [
+        ScoreHistory::class,
+        BountyProgram::class,
+        BountyFinding::class,
+        PermissionSnapshotEntry::class
+    ],
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun scoreHistoryDao(): ScoreHistoryDao
     abstract fun bountyDao(): BountyDao
+    abstract fun snapshotDao(): SnapshotDao
 
     companion object {
         @Volatile private var instance: AppDatabase? = null

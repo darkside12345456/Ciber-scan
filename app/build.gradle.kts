@@ -12,12 +12,37 @@ android {
     defaultConfig {
         applicationId = "com.jp.privacyscanner"
         minSdk = 26          // Android 8.0 — cobre a esmagadora maioria dos dispositivos
+        // targetSdk 34 = Android 14. A Play Store exige um alvo recente para
+        // apps novas/atualizações e o mínimo sobe todos os anos — CONFIRMAR o
+        // requisito atual e subir (com compileSdk + AGP a condizer) ANTES de
+        // submeter. Mantido em 34 aqui para garantir uma primeira build estável.
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
+    }
+
+    // Assinatura de release lida de variáveis de ambiente / propriedades Gradle
+    // (nunca do código). No CI, guardar numa keystore em base64 nos secrets do
+    // repositório e materializá-la antes do assembleRelease. Se não houver
+    // keystore, o bloco não é criado e a build de release sai não assinada.
+    val keystorePath = System.getenv("KEYSTORE_PATH")
+        ?: (project.findProperty("KEYSTORE_PATH") as String?)
+
+    signingConfigs {
+        if (keystorePath != null) {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                    ?: (project.findProperty("KEYSTORE_PASSWORD") as String?)
+                keyAlias = System.getenv("KEY_ALIAS")
+                    ?: (project.findProperty("KEY_ALIAS") as String?)
+                keyPassword = System.getenv("KEY_PASSWORD")
+                    ?: (project.findProperty("KEY_PASSWORD") as String?)
+            }
+        }
     }
 
     buildTypes {
@@ -27,6 +52,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            if (keystorePath != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

@@ -1,6 +1,5 @@
 package com.jp.privacyscanner.data.permissions
 
-import android.Manifest
 import com.jp.privacyscanner.data.model.PermissionCategory
 import com.jp.privacyscanner.data.model.RiskLevel
 
@@ -30,83 +29,83 @@ object PermissionCatalog {
 
     private val catalog: Map<String, Entry> = buildMap {
         // ---------------- Localização ----------------
-        put(Manifest.permission.ACCESS_FINE_LOCATION, Entry(
+        put("android.permission.ACCESS_FINE_LOCATION", Entry(
             PermissionCategory.LOCATION, RiskLevel.HIGH,
             "Permite saber a tua localização exata (GPS). Faz sentido em mapas, " +
                 "transportes ou meteorologia. Numa app que não precise de saber onde estás, é um sinal de alerta."
         ))
-        put(Manifest.permission.ACCESS_COARSE_LOCATION, Entry(
+        put("android.permission.ACCESS_COARSE_LOCATION", Entry(
             PermissionCategory.LOCATION, RiskLevel.MEDIUM,
             "Permite saber a tua localização aproximada (por rede/Wi-Fi). Menos precisa que o GPS, " +
                 "mas ainda revela a zona onde te encontras."
         ))
-        put(Manifest.permission.ACCESS_BACKGROUND_LOCATION, Entry(
+        put("android.permission.ACCESS_BACKGROUND_LOCATION", Entry(
             PermissionCategory.LOCATION, RiskLevel.CRITICAL,
             "Permite seguir a tua localização mesmo com a app fechada. É das permissões mais intrusivas: " +
                 "concede apenas a apps em que confias totalmente e que dependem disso (ex.: navegação)."
         ))
 
         // ---------------- Microfone ----------------
-        put(Manifest.permission.RECORD_AUDIO, Entry(
+        put("android.permission.RECORD_AUDIO", Entry(
             PermissionCategory.MICROPHONE, RiskLevel.HIGH,
             "Permite gravar áudio pelo microfone. Normal em apps de chamadas, gravação ou assistentes de voz. " +
                 "Numa app sem essas funções, questiona porque precisa de te ouvir."
         ))
 
         // ---------------- Câmara ----------------
-        put(Manifest.permission.CAMERA, Entry(
+        put("android.permission.CAMERA", Entry(
             PermissionCategory.CAMERA, RiskLevel.HIGH,
             "Permite tirar fotos e gravar vídeo. Esperado em câmara, videochamadas ou leitura de QR codes. " +
                 "Fora disso, é um acesso poderoso que convém rever."
         ))
 
         // ---------------- Contactos ----------------
-        put(Manifest.permission.READ_CONTACTS, Entry(
+        put("android.permission.READ_CONTACTS", Entry(
             PermissionCategory.CONTACTS, RiskLevel.HIGH,
             "Permite ler a tua lista de contactos. Útil em mensagens ou email, mas é também um dos dados " +
                 "mais recolhidos para publicidade e criação de perfis."
         ))
-        put(Manifest.permission.WRITE_CONTACTS, Entry(
+        put("android.permission.WRITE_CONTACTS", Entry(
             PermissionCategory.CONTACTS, RiskLevel.MEDIUM,
             "Permite adicionar ou alterar contactos no teu telemóvel."
         ))
-        put(Manifest.permission.GET_ACCOUNTS, Entry(
+        put("android.permission.GET_ACCOUNTS", Entry(
             PermissionCategory.CONTACTS, RiskLevel.MEDIUM,
             "Permite ver as contas configuradas no dispositivo (Google, email, etc.)."
         ))
 
         // ---------------- SMS / Mensagens ----------------
-        put(Manifest.permission.READ_SMS, Entry(
+        put("android.permission.READ_SMS", Entry(
             PermissionCategory.SMS, RiskLevel.CRITICAL,
             "Permite ler as tuas mensagens SMS — incluindo códigos de verificação de bancos e contas. " +
                 "Muito poucas apps legítimas precisam disto. Trata com máxima desconfiança."
         ))
-        put(Manifest.permission.SEND_SMS, Entry(
+        put("android.permission.SEND_SMS", Entry(
             PermissionCategory.SMS, RiskLevel.CRITICAL,
             "Permite enviar SMS em teu nome, o que pode gerar custos ou ser usado para fraude."
         ))
-        put(Manifest.permission.RECEIVE_SMS, Entry(
+        put("android.permission.RECEIVE_SMS", Entry(
             PermissionCategory.SMS, RiskLevel.CRITICAL,
             "Permite intercetar SMS recebidos, incluindo códigos de autenticação de dois fatores."
         ))
 
         // ---------------- Chamadas / Telefone ----------------
-        put(Manifest.permission.READ_CALL_LOG, Entry(
+        put("android.permission.READ_CALL_LOG", Entry(
             PermissionCategory.CALL_LOG, RiskLevel.HIGH,
             "Permite ver o histórico de chamadas: quem contactaste e quando."
         ))
-        put(Manifest.permission.READ_PHONE_STATE, Entry(
+        put("android.permission.READ_PHONE_STATE", Entry(
             PermissionCategory.PHONE, RiskLevel.MEDIUM,
             "Permite ler o estado do telefone e identificadores do dispositivo. Pode ser usada para te " +
                 "identificar de forma persistente."
         ))
-        put(Manifest.permission.CALL_PHONE, Entry(
+        put("android.permission.CALL_PHONE", Entry(
             PermissionCategory.PHONE, RiskLevel.MEDIUM,
             "Permite iniciar chamadas diretamente, sem passares pelo marcador."
         ))
 
         // ---------------- Armazenamento / Média ----------------
-        put(Manifest.permission.READ_EXTERNAL_STORAGE, Entry(
+        put("android.permission.READ_EXTERNAL_STORAGE", Entry(
             PermissionCategory.STORAGE, RiskLevel.MEDIUM,
             "Permite ler ficheiros guardados no dispositivo (fotos, documentos, downloads)."
         ))
@@ -124,17 +123,17 @@ object PermissionCatalog {
         ))
 
         // ---------------- Calendário ----------------
-        put(Manifest.permission.READ_CALENDAR, Entry(
+        put("android.permission.READ_CALENDAR", Entry(
             PermissionCategory.CALENDAR, RiskLevel.MEDIUM,
             "Permite ler os teus eventos de calendário — revela a tua rotina e compromissos."
         ))
-        put(Manifest.permission.WRITE_CALENDAR, Entry(
+        put("android.permission.WRITE_CALENDAR", Entry(
             PermissionCategory.CALENDAR, RiskLevel.MEDIUM,
             "Permite criar ou alterar eventos no teu calendário."
         ))
 
         // ---------------- Sensores / Atividade ----------------
-        put(Manifest.permission.BODY_SENSORS, Entry(
+        put("android.permission.BODY_SENSORS", Entry(
             PermissionCategory.BODY_SENSORS, RiskLevel.MEDIUM,
             "Permite ler sensores corporais como o ritmo cardíaco. Dados de saúde são sensíveis."
         ))
@@ -160,12 +159,12 @@ object PermissionCatalog {
         ))
 
         // ---------------- Rede ----------------
-        put(Manifest.permission.INTERNET, Entry(
+        put("android.permission.INTERNET", Entry(
             PermissionCategory.NETWORK, RiskLevel.LOW,
             "Permite aceder à internet. Quase todas as apps a usam; por si só não é preocupante, " +
                 "mas é o canal por onde os dados podem sair do dispositivo."
         ))
-        put(Manifest.permission.ACCESS_NETWORK_STATE, Entry(
+        put("android.permission.ACCESS_NETWORK_STATE", Entry(
             PermissionCategory.NETWORK, RiskLevel.LOW,
             "Permite ver se há ligação à internet."
         ))
@@ -173,4 +172,7 @@ object PermissionCatalog {
 
     /** Devolve os metadados de uma permissão, ou um valor por omissão seguro. */
     fun lookup(rawName: String): Entry = catalog[rawName] ?: DEFAULT
+
+    /** Se a permissão consta explicitamente do catálogo (não caiu no DEFAULT). */
+    fun isKnown(rawName: String): Boolean = catalog.containsKey(rawName)
 }

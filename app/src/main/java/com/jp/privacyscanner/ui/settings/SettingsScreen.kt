@@ -82,8 +82,28 @@ fun SettingsScreen(onBack: () -> Unit) {
                         "O assistente melhora os rascunhos de relatório de bug bounty via API " +
                             "do Claude, com a tua chave. É a ÚNICA funcionalidade da app que usa " +
                             "a internet: o texto do relatório é enviado para a Anthropic. Tudo o " +
-                            "resto — scanner, scoring, monitorização — é 100% local. A chave fica " +
-                            "guardada cifrada no dispositivo e nunca vai para backups.",
+                            "resto — scanner, scoring, monitorização — é 100% local. A chave " +
+                            "nunca vai para backups.",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    if (aiSettings.isEncrypted) {
+                        Text(
+                            "🔒 A chave é guardada cifrada neste dispositivo.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    } else {
+                        Text(
+                            "⚠ Atenção: o armazenamento cifrado não está disponível neste " +
+                                "dispositivo. Se guardares a chave, ela ficará em texto simples. " +
+                                "Podes preferir não a guardar aqui.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    Text(
+                        "Nota: muitos programas de bug bounty têm regras de confidencialidade " +
+                            "(NDA). Enviar o rascunho para uma API externa pode violá-las — " +
+                            "confirma o que o programa permite antes de usar.",
                         style = MaterialTheme.typography.bodySmall
                     )
                     OutlinedTextField(

@@ -41,15 +41,39 @@ object PdfExporter {
         var canvas = page.canvas
         var y = MARGIN
 
+        var inCodeFence = false
         for (rawLine in content.lines()) {
+            // Blocos de código ``` — não imprimimos os marcadores; o conteúdo
+            // interno é mostrado tal e qual (já em fonte monoespaçada).
+            if (rawLine.trimStart().startsWith("```")) {
+                inCodeFence = !inCodeFence
+                continue
+            }
+
+            val isH2 = !inCodeFence && rawLine.startsWith("## ")
+            val isH1 = !inCodeFence && rawLine.startsWith("# ")
             val paint = when {
-                rawLine.startsWith("## ") -> h2
-                rawLine.startsWith("# ") -> h1
+                isH2 -> h2
+                isH1 -> h1
                 else -> body
             }
-            val text = rawLine.removePrefix("## ").removePrefix("# ")
+
+            var text = rawLine
+            var indent = ""
+            if (!inCodeFence) {
+                text = text.removePrefix("## ").removePrefix("# ")
+                // Listas: "- " ou "* " no início passam a marcador "• ".
+                val bullet = Regex("^\\s*[-*]\\s+")
+                bullet.find(text)?.let {
+                    text = "• " + text.substring(it.value.length)
+                    indent = "  "
+                }
+                // Ênfases inline: removemos os marcadores para não aparecerem crus.
+                text = stripInlineMarkdown(text)
+            }
+
             val wrapped = wrap(text, paint, maxWidth)
-            for (line in wrapped) {
+            wrapped.forEachIndexed { idx, line ->
                 if (y + LINE_HEIGHT > PAGE_HEIGHT - MARGIN) {
                     doc.finishPage(page)
                     pageNumber++
@@ -57,7 +81,7 @@ object PdfExporter {
                     canvas = page.canvas
                     y = MARGIN
                 }
-                canvas.drawText(line, MARGIN, y, paint)
+                canvas.drawText(if (idx == 0) line else indent + line, MARGIN, y, paint)
                 y += LINE_HEIGHT
             }
         }
@@ -86,6 +110,14 @@ object PdfExporter {
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         )
     }
+
+    /** Remove marcadores de ênfase inline (**, __, *, _, `) do texto. */
+    private fun stripInlineMarkdown(s: String): String = s
+        .replace("**", "")
+        .replace("__", "")
+        .replace("`", "")
+        .replace(Regex("(?<=\\s|^)[*_](\\S)"), "$1") // *italico* / _italico_ de abertura
+        .replace(Regex("(\\S)[*_](?=\\s|\\p{Punct}|$)"), "$1") // fecho
 
     private fun pageInfo(number: Int) =
         PdfDocument.PageInfo.Builder(PAGE_WIDTH, PAGE_HEIGHT, number).create()

@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
-    <!-- O histórico local pode ser incluído no backup; nenhum dado sai para servidores nossos. -->
     <!-- A chave da API do Claude NUNCA vai para backup. -->
     <exclude domain="sharedpref" path="ai_secure_prefs.xml" />
     <exclude domain="sharedpref" path="ai_prefs_fallback.xml" />
+    <!--
+      A base de dados contém o snapshot de permissões, que descreve as apps
+      instaladas no dispositivo. Coerente com privacy by design, não a enviamos
+      para a cloud. (Custo: histórico e dados de bug bounty não são restaurados
+      numa mudança de telemóvel — aceitável nesta fase.)
+    -->
+    <exclude domain="database" path="privacy_scanner.db" />
 </full-backup-content>

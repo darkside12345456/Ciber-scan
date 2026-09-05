@@ -405,7 +405,23 @@ private fun ApiKeyDialog(
                 Text(
                     "Ao ativar, o texto do relatório é enviado para a API do Claude com a " +
                         "tua própria chave. É a única funcionalidade que usa a internet — todo " +
-                        "o resto da app é local. A chave fica guardada cifrada no dispositivo.",
+                        "o resto da app é local.",
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    if (aiSettings.isEncrypted) {
+                        "🔒 A chave é guardada cifrada no dispositivo."
+                    } else {
+                        "⚠ A cifra não está disponível neste dispositivo: a chave ficaria em " +
+                            "texto simples."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (aiSettings.isEncrypted) MaterialTheme.typography.bodySmall.color
+                    else MaterialTheme.colorScheme.error
+                )
+                Text(
+                    "Confirma as regras de confidencialidade (NDA) do programa antes de enviar " +
+                        "detalhes de um achado para fora.",
                     style = MaterialTheme.typography.bodySmall
                 )
                 OutlinedTextField(

@@ -99,6 +99,14 @@ com **Android 8.0+ (API 26)**.
 > Plugin e as dependências AndroidX (precisa de rede). Em Android Studio, basta
 > abrir a pasta do projeto e deixar o Gradle sincronizar.
 
+### Build automática (sem PC) — GitHub Actions
+
+Cada `push` dispara o workflow `.github/workflows/android.yml`, que corre os
+testes e compila o APK de debug num runner com o Android SDK. Vai a **Actions**
+no repositório e descarrega o artefacto **`privacyscanner-debug-apk`** para
+instalar no telemóvel. É a forma recomendada de obter uma build enquanto o
+ambiente de desenvolvimento não tiver acesso ao `dl.google.com`.
+
 ## Limitações conhecidas (por design do Android — relatório, secção 2)
 
 - Só conseguimos ler as permissões **declaradas** e se estão **concedidas**.
